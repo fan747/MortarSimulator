@@ -1,0 +1,4 @@
+repository "Artillery Simulator@unity_2GsZ3myY6FhGpA@cloud"
+  path "/"
+    br "/main"
+    co "/main"
