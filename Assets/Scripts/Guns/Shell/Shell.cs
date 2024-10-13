@@ -8,6 +8,7 @@ public abstract class Shell : MonoBehaviour
 {
     //В км/ч
     [SerializeField] protected float _initialSpeedKmh;
+    [SerializeField] protected GameObject _shellExplosionEffect;
 
     protected Vector3 _startPosition;
     protected Vector3 _peakPosition;
@@ -28,10 +29,12 @@ public abstract class Shell : MonoBehaviour
         //Запускаем снаряд по траектории
         await Fly(_startPosition, peakPosition, hitPosition, flyTime);
 
-        print("Снаряд приземлился");
-
         //Выключаем видимость снаряда
         gameObject.GetComponent<MeshRenderer>().enabled = false;
+
+        await CreateExplosion();
+        
+        Destroy(gameObject);
     }
 
     protected virtual async Task Fly(Vector3 startPosition, Vector3 peakPosition, Vector3 hitPosition, float flyTime)
@@ -55,6 +58,19 @@ public abstract class Shell : MonoBehaviour
 
             await Task.Yield();
         }
+    }
+
+    protected virtual async Task CreateExplosion()
+    {
+        GameObject explosionEffect = Instantiate(_shellExplosionEffect, gameObject.transform.position, Quaternion.identity);
+        ParticleSystem explosionEffectParticleSystem = explosionEffect.GetComponent<ParticleSystem>();
+
+        while (explosionEffectParticleSystem.isPlaying)
+        {
+            await Task.Yield();
+        }
+
+        Destroy(explosionEffect);
     }
 
     private void OnDrawGizmos()

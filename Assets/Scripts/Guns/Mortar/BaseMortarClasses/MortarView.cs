@@ -51,7 +51,6 @@ public abstract class MortarView : MonoBehaviour
         {
             //Ќормализованый угол поворота ( что бы не ускор€лась при длинных поворотах )
             float normalizedRotateAngle = Mathf.Abs(gameObject.transform.eulerAngles.y - camerTransform.eulerAngles.y) / 360;
-            print($"Ќомрализованый угол поворота: {normalizedRotateAngle}");
             //ѕоворот от поворота игрока до поворота камера за _mortarRotateSpeed * Time.deltaTime
             Quaternion rotation = Quaternion.Lerp(gameObject.transform.rotation, camerTransform.rotation, mortarRotateSpeed * Time.deltaTime / normalizedRotateAngle);
 
