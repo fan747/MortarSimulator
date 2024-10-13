@@ -1223,6 +1223,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1665762562}
   - component: {fileID: 1665762563}
+  - component: {fileID: 1665762565}
   - component: {fileID: 1665762564}
   m_Layer: 0
   m_Name: Player
@@ -1264,8 +1265,8 @@ MonoBehaviour:
   _inputController: {fileID: 1665762564}
   _shellPrefab: {fileID: 2607969998409116679, guid: 4476a7ad7af531240904d3ea5b1c758c, type: 3}
   _shellSpawnPointTransform: {fileID: 736882037}
-  _mortarRotateSpeed: 2
-  _mortarAimSpeed: 10000
+  _mortarRotateSpeed: 0.2
+  _mortarAimSpeed: 7500
   _maxAngleMortar: 85
   _minAngleMortar: 45
 --- !u!114 &1665762564
@@ -1280,6 +1281,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77598cfa485613d4a8435bf6da94f3e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1665762565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1665762561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bd7af1edef1ae646815ccc99923a646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mortar: {fileID: 1665762563}
 --- !u!1 &1812600451
 GameObject:
   m_ObjectHideFlags: 0
