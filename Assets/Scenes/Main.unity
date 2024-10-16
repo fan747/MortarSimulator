@@ -871,7 +871,7 @@ Transform:
   m_GameObject: {fileID: 736882036}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.006, z: 0.431}
+  m_LocalPosition: {x: 0, y: 1.006, z: 0.4310001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1777,8 +1777,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 770563485}
-  - {fileID: 736882037}
   - {fileID: 1890499457}
+  - {fileID: 736882037}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!114 &1665762563
@@ -1800,7 +1800,7 @@ MonoBehaviour:
   _mortarRotateSpeed: 0.2
   _mortarAimSpeed: 7500
   _maxAngleMortar: 85
-  _minAngleMortar: 45
+  _minAngleMortar: 80
 --- !u!114 &1665762564
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1825,7 +1825,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bd7af1edef1ae646815ccc99923a646, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mortar: {fileID: 1665762563}
 --- !u!1 &1812600451
 GameObject:
   m_ObjectHideFlags: 0

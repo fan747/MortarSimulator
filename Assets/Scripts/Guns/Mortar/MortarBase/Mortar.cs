@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Mortar : MonoBehaviour
+public abstract class MortarModel : MonoBehaviour
 {
     [Header("Objects")]
     [SerializeField] protected GameObject _camera;
@@ -20,13 +20,26 @@ public abstract class Mortar : MonoBehaviour
     protected int _mILAim => Convert.ToInt32(_angleAim * 17.453f);
     protected float _azimuth;
     protected int _angleAim;
+    protected Vector3 _rotationMortar;
 
     //int angleAim, float mouseScroll, float mortarRotateSpeed, float mortarAimSpeed, int minAngleMortar, int maxAngleMortar, Transform cameraTransform
-    public Action<bool ,int, float, float, float, int , int, Transform> ChangeViewMortarEventHandler;
+    public Action<bool, int, float, float, float, int, int, Transform> ChangeViewMortarEventHandler;
 
     private void Start()
     {
+        _azimuth = gameObject.transform.rotation.eulerAngles.y;
         _angleAim = _minAngleMortar;
+
+        AimingMortat(_inputController.GetIsMoving(),
+                _angleAim,
+                _inputController.GetMouseScroll(),
+                _mortarRotateSpeed,
+                _mortarAimSpeed,
+                _minAngleMortar,
+                _maxAngleMortar,
+                _camera.transform
+                );
+
         _inputController.ShootEventHandler += Shot;
     }
 
@@ -37,17 +50,17 @@ public abstract class Mortar : MonoBehaviour
 
     private void Update()
     {
-        _azimuth = gameObject.transform.rotation.eulerAngles.y;
         ChangeView();
         SetAngleAim();
     }
 
-    //ѕередаем изменени€ во View
     protected void ChangeView()
     {
         if (_inputController.GetIsMoving() || _inputController.GetMouseScroll() != 0)
         {
-            ChangeViewMortarEventHandler?.Invoke(_inputController.GetIsMoving(),
+            _azimuth = gameObject.transform.rotation.eulerAngles.y;
+
+            AimingMortat(_inputController.GetIsMoving(),
                 _angleAim,
                 _inputController.GetMouseScroll(),
                 _mortarRotateSpeed,
@@ -65,11 +78,8 @@ public abstract class Mortar : MonoBehaviour
 
         if (mouseScroll != 0)
         {
-            //¬еличина на которую нужно изменить MIL
             int _mILChange = Convert.ToInt32(mouseScroll * Time.deltaTime * _mortarAimSpeed);
 
-            //≈сли MIL в целевом диапазоне, то провер€ем текущую иттерацию на то, что бы при прибавлении MIL, они не ушли за целевой диапазон, -
-            // - иначе устанавливаем значение MIL на крайние значени€
             if (_angleAim >= _minAngleMortar && _angleAim <= _maxAngleMortar)
             {
                 if (_angleAim + _mILChange > _minAngleMortar && _angleAim + _mILChange < _maxAngleMortar)
@@ -93,8 +103,8 @@ public abstract class Mortar : MonoBehaviour
     {
         GameObject shellPrefab = Instantiate(
             _shellPrefab,
-            -_shellSpawnPointTransform.position,
-            Quaternion.Euler(gameObject.transform.eulerAngles.x + 45, gameObject.transform.eulerAngles.y, gameObject.transform.eulerAngles.z)
+            _shellSpawnPointTransform.position,
+            Quaternion.identity
             );
 
         Shell shell = shellPrefab.GetComponent<Shell>();
@@ -103,5 +113,37 @@ public abstract class Mortar : MonoBehaviour
 
         shell = null;
         shellPrefab = null;
+    }
+
+    protected virtual void AimingMortat(bool isMove, int angleAim, float mouseScroll, float mortarRotateSpeed, float mortarAimSpeed, int minAngleMortar, int maxAngleMortar, Transform cameraTransform)
+    {
+        _rotationMortar = gameObject.transform.eulerAngles;
+
+        SetMIL(angleAim);
+        HorizonalAim(isMove, mortarRotateSpeed, cameraTransform);
+
+        if (gameObject.transform.eulerAngles != _rotationMortar)
+        {
+            gameObject.transform.eulerAngles = _rotationMortar;
+        }
+    }
+    protected void SetMIL(int angleAim)
+    {
+        int angle = angleAim - 45;
+
+        if (_rotationMortar.x != angle)
+            _rotationMortar.x = -angle;
+    }
+
+    protected void HorizonalAim(bool isMove, float mortarRotateSpeed, Transform camerTransform)
+    {
+        if (isMove)
+        {
+            float normalizedRotateAngle = Mathf.Abs(gameObject.transform.eulerAngles.y - camerTransform.eulerAngles.y) / 360;
+
+            Quaternion rotation = Quaternion.Lerp(gameObject.transform.rotation, camerTransform.rotation, mortarRotateSpeed * Time.deltaTime / normalizedRotateAngle);
+
+            _rotationMortar.y = rotation.eulerAngles.y;
+        }
     }
 }
