@@ -56,8 +56,11 @@ public abstract class Shell : MonoBehaviour
     private void ShellRotationDuringFlight()
     {
         Vector3 shellVelocity = _rigidbody.velocity;
-        
-        transform.eulerAngles = Quaternion.LookRotation(shellVelocity).eulerAngles + new Vector3(90 ,0, 0);
+
+        if (shellVelocity != Vector3.zero)
+        {
+            transform.eulerAngles = Quaternion.LookRotation(shellVelocity).eulerAngles + new Vector3(90, 0, 0);
+        }
     }
 
 
