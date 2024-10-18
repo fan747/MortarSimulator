@@ -18,10 +18,13 @@ public class EnemyStateMachine
         switch (_currentState)
         {
             case EnemyState.Rest:
-                _enemyBehavior.EnemyPatroling();
+                _enemyBehavior.Patroling();
                 break;              
             case EnemyState.SearchShelter:
-                _enemyBehavior.EnemySearchShelter();
+                _enemyBehavior.FindCoverEventHandler.Invoke();
+                break;
+            case EnemyState.InShelter:
+                _enemyBehavior.InCoverEventHandler?.Invoke();
                 break;
             case EnemyState.Injury:
                 break;

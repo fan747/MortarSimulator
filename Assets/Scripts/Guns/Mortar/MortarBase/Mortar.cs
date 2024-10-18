@@ -17,9 +17,9 @@ public abstract class MortarModel : MonoBehaviour
     [SerializeField] protected int _maxAngleMortar;
     [SerializeField] protected int _minAngleMortar;
 
-    protected int _mILAim => Convert.ToInt32(_angleAim * 17.453f);
+    protected float _mILAim => _angleAim * 17.453f;
     protected float _azimuth;
-    protected int _angleAim;
+    protected float _angleAim;
     protected Vector3 _rotationMortar;
 
     //int angleAim, float mouseScroll, float mortarRotateSpeed, float mortarAimSpeed, int minAngleMortar, int maxAngleMortar, Transform cameraTransform
@@ -78,12 +78,12 @@ public abstract class MortarModel : MonoBehaviour
 
         if (mouseScroll != 0)
         {
-            int _mILChange = Convert.ToInt32(mouseScroll * Time.deltaTime * _mortarAimSpeed);
+            float _mILChange = mouseScroll * Time.deltaTime * _mortarAimSpeed;
 
             if (_angleAim >= _minAngleMortar && _angleAim <= _maxAngleMortar)
             {
                 if (_angleAim + _mILChange > _minAngleMortar && _angleAim + _mILChange < _maxAngleMortar)
-                    _angleAim += Convert.ToInt32(mouseScroll * Time.deltaTime * _mortarAimSpeed);
+                    _angleAim += mouseScroll * Time.deltaTime * _mortarAimSpeed;
                 else if (_angleAim - _minAngleMortar < _maxAngleMortar - _angleAim)
                 {
                     _angleAim = _minAngleMortar;
@@ -115,7 +115,7 @@ public abstract class MortarModel : MonoBehaviour
         shellPrefab = null;
     }
 
-    protected virtual void AimingMortat(bool isMove, int angleAim, float mouseScroll, float mortarRotateSpeed, float mortarAimSpeed, int minAngleMortar, int maxAngleMortar, Transform cameraTransform)
+    protected virtual void AimingMortat(bool isMove, float angleAim, float mouseScroll, float mortarRotateSpeed, float mortarAimSpeed, int minAngleMortar, int maxAngleMortar, Transform cameraTransform)
     {
         _rotationMortar = gameObject.transform.eulerAngles;
 
@@ -127,9 +127,9 @@ public abstract class MortarModel : MonoBehaviour
             gameObject.transform.eulerAngles = _rotationMortar;
         }
     }
-    protected void SetMIL(int angleAim)
+    protected void SetMIL(float angleAim)
     {
-        int angle = angleAim - 45;
+        float angle = angleAim - 45;
 
         if (_rotationMortar.x != angle)
             _rotationMortar.x = -angle;
