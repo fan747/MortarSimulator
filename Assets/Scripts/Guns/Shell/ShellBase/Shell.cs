@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -28,7 +29,7 @@ public abstract class Shell : MonoBehaviour
         _renderer.enabled = false;
         _rigidbody.isKinematic = true;
 
-        CreateExplosion(_shellExplosionEffect);
+        CreateExplosionTask(_shellExplosionEffect);
     }
 
     private void Update(){
@@ -64,10 +65,12 @@ public abstract class Shell : MonoBehaviour
     }
 
 
-    protected virtual async Task CreateExplosion(GameObject shellExplosionEffect)
+    protected virtual async Task CreateExplosionTask(GameObject shellExplosionEffect)
     {
         GameObject explosionEffect = Instantiate(shellExplosionEffect, gameObject.transform.position, Quaternion.identity);
         ParticleSystem explosionEffectParticleSystem = explosionEffect.GetComponent<ParticleSystem>();
+
+        EnemiesManager.FindCoverEventHandler?.Invoke();
 
         while (explosionEffectParticleSystem.isPlaying)
         {

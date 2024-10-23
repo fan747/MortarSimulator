@@ -15,36 +15,38 @@ public class EnemyBehavior : MonoBehaviour
     [SerializeField] private float _layTime;
     [SerializeField] private GameObject _childrenCapsule;
 
-    private float _originalCenterY;
-    private List<Bounds> _safeZoneBounds;
     private NavMeshAgent _agent;
     private EnemyStateMachine _enemyStateMachine;
-    private Vector3 _nearestCoverRandomPoint;
-
-    public Action FindCoverEventHandler;
+    private Vector3 _nearestCoverPoint;
+    private bool _isLayDown = false;
+    private Vector3 _startPosition;
     public Action InCoverEventHandler;
+    private Vector3 _startRotation;
 
     private void Start()
     {
         _enemyStateMachine = new EnemyStateMachine(this);
         _agent = gameObject.GetComponent<NavMeshAgent>();
-        _safeZoneBounds = new List<Bounds>();
 
-        FindCoverEventHandler += GoToCover;
+        EnemiesManager.FindCoverEventHandler += _enemyStateMachine.SetStateSearchShelter;
+        EnemiesManager.BombingOverEventHandler += _enemyStateMachine.SetStateSearchRest;
+        EnemiesManager.BombingOverEventHandler += StandUp;
         InCoverEventHandler += LayDown;
-
-        FindAllBounds();
     }
 
     private void OnDestroy()
     {
-        FindCoverEventHandler -= GoToCover;
+        EnemiesManager.FindCoverEventHandler -= _enemyStateMachine.SetStateSearchShelter;
+        EnemiesManager.BombingOverEventHandler -= StandUp;
+        EnemiesManager.BombingOverEventHandler -= _enemyStateMachine.SetStateSearchRest;
         InCoverEventHandler -= LayDown;
-    }
+    }        
+
 
     private void Update()
     {
         UpdateCurrentState();
+        _enemyStateMachine.UpdateState();
     }
 
     private void UpdateCurrentState()
@@ -52,16 +54,12 @@ public class EnemyBehavior : MonoBehaviour
         switch (_enemyStateMachine.GetCurrentState())
         {
             case EnemyState.Rest:
-                _enemyStateMachine.SetState(EnemyState.SearchShelter);
                 break;
             case EnemyState.SearchShelter:
                 _agent.isStopped = false;
 
-                if (_agent.transform.position == new Vector3(_nearestCoverRandomPoint.x, _agent.transform.position.y, _nearestCoverRandomPoint.z) && !_agent.hasPath)
+                if (_agent.transform.position == new Vector3(_nearestCoverPoint.x, _agent.transform.position.y, _nearestCoverPoint.z) && !_agent.hasPath)
                 {
-                    _agent.isStopped = true;
-                    _agent.updateUpAxis = false;
-                    _agent.updatePosition = false;
                     _enemyStateMachine.SetState(EnemyState.InShelter);
                 }
                 break;
@@ -98,74 +96,36 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
 
-    private void GoToCover()
-    {
-       if (FindNearesBoundsRandomPoint(out _nearestCoverRandomPoint))
-       {
-            _agent.SetDestination(_nearestCoverRandomPoint);            
-        } 
+    public void GoToCover(Vector3 coverPoint)
+    {  
+       _agent.SetDestination(coverPoint);                 
     }
 
-    private void FindAllBounds()
+    public void LayDown()
     {
-        GameObject[] boundGameObjects = GameObject.FindGameObjectsWithTag("Cover");
-        foreach (GameObject gameObject in boundGameObjects)
+        if (!_isLayDown)
         {
-            Bounds bounds = gameObject.GetComponent<Collider>().bounds;
-            _safeZoneBounds.Add(bounds);
+            LayDownTask();
         }
-    }
-
-    private bool FindNearesBoundsRandomPoint(out Vector3 point)
-    {
-        Bounds nearestBounds = new Bounds();
-        float? distanceForNearestBounds = null;
-        Vector3 enemyPosition = transform.position;
-
-        if (_safeZoneBounds.Count != 0)
-        {
-            foreach (Bounds safeZoneBounds in _safeZoneBounds)
-            {
-                if (nearestBounds == new Bounds() && distanceForNearestBounds == null)
-                {
-                    nearestBounds = safeZoneBounds;
-                    distanceForNearestBounds = Vector3.Distance(enemyPosition, safeZoneBounds.ClosestPoint(enemyPosition));
-                }
-
-                float distance = Vector3.Distance(enemyPosition, safeZoneBounds.ClosestPoint(enemyPosition));
-
-                if (distance < distanceForNearestBounds)
-                {
-                    distanceForNearestBounds = distance;
-                    nearestBounds = safeZoneBounds;
-                }
-            }
-
-            Vector3 randomPoint = new Vector3(Random.Range(nearestBounds.min.x + _agent.height/2, nearestBounds.max.x - _agent.height / 2), nearestBounds.center.y, Random.Range(nearestBounds.min.z + _agent.height / 2, nearestBounds.max.z - _agent.height / 2));
-
-            point = randomPoint;
-            return true;
-        }
-      
-        point = Vector3.zero; 
-        return false;
-    }
-
-    private void LayDown()
-    {
-        LayDownTask();
     }
 
     private async Task LayDownTask()
     {
-
         if (_agent != null)
         {
-            Vector3 startPosition = _childrenCapsule.transform.position;
-            Vector3 layPosition = startPosition - new Vector3(0, 1, 0);
+            _isLayDown = true;
+            _agent.isStopped = true;
+            _agent.updateUpAxis = false;
+            _agent.updatePosition = false;
 
-            Vector3 startRotation = _childrenCapsule.transform.eulerAngles;
-            Vector3 layRotation = startRotation + new Vector3(90, 0, 0);
+            _startPosition = _childrenCapsule.transform.position;
+            Vector3 layPosition = _startPosition - new Vector3(0, 1, 0);
+
+
+            _startRotation = _childrenCapsule.transform.eulerAngles;
+            Vector3 rotatelDirection = new Vector3(Mathf.Sin(_startRotation.y * Mathf.Deg2Rad), 0, Mathf.Cos(_startRotation.y * Mathf.Deg2Rad));
+            Vector3 layRotation = rotatelDirection * 90;
+
 
             float timer = 0;
 
@@ -174,20 +134,51 @@ public class EnemyBehavior : MonoBehaviour
                 timer += Time.deltaTime;
                 float normalizedTimer = timer / _layTime;
 
-                _childrenCapsule.transform.position = Vector3.Lerp(startPosition, layPosition, normalizedTimer);
-                _childrenCapsule.transform.eulerAngles = Vector3.Lerp(startRotation, layRotation, normalizedTimer);
+                _childrenCapsule.transform.position = Vector3.Lerp(_startPosition, layPosition, normalizedTimer);
+                _childrenCapsule.transform.eulerAngles = Vector3.Lerp(_startRotation, layRotation, normalizedTimer);
 
                 await Task.Yield();
             }
         }
     }
-    private void StandUp()
+
+    public void StandUp()
     {
-        StandUpTask();
+        if (_isLayDown)
+        {
+            StandUpTask();
+        }
     }
 
     private async Task StandUpTask()
     {
-        
+        if (_agent != null)
+        {
+            _isLayDown = false;
+
+            Vector3 startPosition = _childrenCapsule.transform.position;
+            Vector3 startRotation = _childrenCapsule.transform.eulerAngles;
+
+            float timer = 0;
+
+            while (timer < _layTime)
+            {
+                timer += Time.deltaTime;
+                float normalizedTimer = timer / _layTime;
+
+                _childrenCapsule.transform.position = Vector3.Lerp(startPosition, _startPosition, normalizedTimer);
+                _childrenCapsule.transform.eulerAngles = Vector3.Lerp(startRotation, _startRotation, normalizedTimer);
+
+                await Task.Yield();
+            }
+
+            _agent.isStopped = false;
+            _agent.updateUpAxis = true;
+            _agent.updatePosition = true;
+        }
     }
+
+    public NavMeshAgent GetNavMeshAgent() => _agent;
+
+    public Vector3 SetNearestCoverPoint(Vector3 nearestCoverPoint) => _nearestCoverPoint = nearestCoverPoint; 
 }

@@ -13,6 +13,8 @@ public class EnemyStateMachine
         _currentState = EnemyState.Rest;
     }
 
+
+
     public void UpdateState()
     {
         switch (_currentState)
@@ -21,7 +23,6 @@ public class EnemyStateMachine
                 _enemyBehavior.Patroling();
                 break;              
             case EnemyState.SearchShelter:
-                _enemyBehavior.FindCoverEventHandler.Invoke();
                 break;
             case EnemyState.InShelter:
                 _enemyBehavior.InCoverEventHandler?.Invoke();
@@ -40,4 +41,13 @@ public class EnemyStateMachine
     }
 
     public EnemyState GetCurrentState() => _currentState;
+
+    public void SetStateSearchShelter()
+    {
+        SetState(EnemyState.SearchShelter);
+    }
+    public void SetStateSearchRest()
+    {
+        SetState(EnemyState.Rest);
+    }
 }
