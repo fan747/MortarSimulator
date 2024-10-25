@@ -17,6 +17,7 @@ public class EnemiesManager : MonoBehaviour
     private List<EnemyBehavior> _enemyBehaviors = new List<EnemyBehavior>();
     private List<Bounds> _safeZoneBounds = new List<Bounds>();
     private List<Vector3> _nearestSafeZonePositions;
+    private float timerAfterExplosion;
     public static Action FindCoverEventHandler;
     public static Action BombingOverEventHandler;
 
@@ -241,16 +242,23 @@ public class EnemiesManager : MonoBehaviour
     private async Task StartTimerAfterExplosionTask()
     {
         FindCoverEventHandler -= FindCover;
+        FindCoverEventHandler += ResetTimer;
 
-        float timer = 0f;
+        timerAfterExplosion = 0;
 
-        while (timer < _timeUnderCover)
+        while (timerAfterExplosion < _timeUnderCover)
         {
-            timer += Time.deltaTime;
+            timerAfterExplosion += Time.deltaTime;
             await Task.Yield();
         }
 
-        BombingOverEventHandler?.Invoke();
+        FindCoverEventHandler -= ResetTimer;
         FindCoverEventHandler += FindCover;
+        BombingOverEventHandler?.Invoke();
+    }
+
+    private void ResetTimer()
+    {
+        timerAfterExplosion = 0;
     }
 }

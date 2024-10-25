@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public abstract class MortarModel : MonoBehaviour
 {
@@ -10,8 +11,13 @@ public abstract class MortarModel : MonoBehaviour
     [SerializeField] protected InputController _inputController;
     [SerializeField] protected GameObject _shellPrefab;
     [SerializeField] protected Transform _shellSpawnPointTransform;
+    [SerializeField] protected AudioSource _audioSource;
+    [SerializeField] protected ParticleSystem _shotPaticleSystem;
+    [SerializeField] protected ParticleSystem _shotUnderPaticleSystem;
 
     [Header("Params")]
+    [SerializeField] protected float _angleAimSpread;
+    [SerializeField] protected float _azimuthSpread;
     [SerializeField] protected float _mortarRotateSpeed;
     [SerializeField] protected float _mortarAimSpeed;
     [SerializeField] protected int _maxAngleMortar;
@@ -101,15 +107,22 @@ public abstract class MortarModel : MonoBehaviour
 
     protected virtual void Shot()
     {
+        _audioSource.PlayOneShot(_audioSource.clip);
+
         GameObject shellPrefab = Instantiate(
             _shellPrefab,
             _shellSpawnPointTransform.position,
             Quaternion.identity
             );
 
+        _shotPaticleSystem.Play(true);
+        //_shotUnderPaticleSystem.Play();
+
         Shell shell = shellPrefab.GetComponent<Shell>();
 
-        shell.Shoot(_angleAim, _azimuth);
+        float spreadAngleAim = _angleAim + Random.Range(-_angleAimSpread, _angleAimSpread);
+        float spreadAzimuth = _azimuth + Random.Range(-_azimuthSpread, _azimuthSpread);
+        shell.Shoot(spreadAngleAim, spreadAzimuth);
 
         shell = null;
         shellPrefab = null;

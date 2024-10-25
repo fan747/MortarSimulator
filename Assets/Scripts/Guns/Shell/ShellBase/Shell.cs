@@ -12,6 +12,7 @@ public abstract class Shell : MonoBehaviour
     //� ��/�
     [SerializeField] protected float _initialSpeedKmh;
     [SerializeField] protected GameObject _shellExplosionEffect;
+    [SerializeField] protected AudioSource _audioSource;
 
     protected Rigidbody _rigidbody;
     protected Renderer _renderer;
@@ -70,13 +71,17 @@ public abstract class Shell : MonoBehaviour
         GameObject explosionEffect = Instantiate(shellExplosionEffect, gameObject.transform.position, Quaternion.identity);
         ParticleSystem explosionEffectParticleSystem = explosionEffect.GetComponent<ParticleSystem>();
 
+        AudioSource explosionSound = Instantiate(_audioSource, gameObject.transform.position, Quaternion.identity);
+        explosionSound.PlayOneShot(explosionSound.clip);
+
         EnemiesManager.FindCoverEventHandler?.Invoke();
 
-        while (explosionEffectParticleSystem.isPlaying)
+        while (explosionEffectParticleSystem.isPlaying || explosionSound.isPlaying)
         {
             await Task.Yield();
         }
 
+        Destroy(explosionSound.gameObject);
         Destroy(explosionEffect);
         Destroy(gameObject);
     }

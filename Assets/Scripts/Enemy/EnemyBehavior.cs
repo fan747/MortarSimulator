@@ -86,7 +86,7 @@ public class EnemyBehavior : MonoBehaviour
 
     public void Patroling()
     {
-        if (_agent.remainingDistance <= _agent.stoppingDistance)
+        if (_agent.remainingDistance <= _agent.stoppingDistance && !_isLayDown)
         {
             Vector3 point;
             if (RandomPoint(_centrePatrolPoint, _range, out point))
