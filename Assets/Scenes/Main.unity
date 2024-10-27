@@ -2902,9 +2902,9 @@ MonoBehaviour:
   _shotPaticleSystem: {fileID: 412894553026195211}
   _shotUnderPaticleSystem: {fileID: 1485884388}
   _angleAimSpread: 0.5
-  _azimuthSpread: 10
+  _azimuthSpread: 5
   _mortarRotateSpeed: 0.01
-  _mortarAimSpeed: 2500
+  _mortarAimSpeed: 1000
   _maxAngleMortar: 85
   _minAngleMortar: 80
 --- !u!114 &1665762564

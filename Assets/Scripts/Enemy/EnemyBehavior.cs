@@ -21,7 +21,9 @@ public class EnemyBehavior : MonoBehaviour
     private bool _isLayDown = false;
     private Vector3 _startPosition;
     public Action InCoverEventHandler;
+    public Action IsHitEventHandler;
     private Vector3 _startRotation;
+    private bool _isSitDown = false;
 
     private void Start()
     {
@@ -31,7 +33,22 @@ public class EnemyBehavior : MonoBehaviour
         EnemiesManager.FindCoverEventHandler += _enemyStateMachine.SetStateSearchShelter;
         EnemiesManager.BombingOverEventHandler += _enemyStateMachine.SetStateSearchRest;
         EnemiesManager.BombingOverEventHandler += StandUp;
+        IsHitEventHandler += Die;
         InCoverEventHandler += LayDown;
+    }
+
+    public void Die()
+    {
+        EnemiesManager.FindCoverEventHandler -= _enemyStateMachine.SetStateSearchShelter;
+        EnemiesManager.BombingOverEventHandler -= StandUp;
+        EnemiesManager.BombingOverEventHandler -= _enemyStateMachine.SetStateSearchRest;
+
+        _enemyStateMachine.SetState(EnemyState.Die);
+    }
+
+    public void Injury()
+    {
+
     }
 
     private void OnDestroy()
@@ -40,6 +57,7 @@ public class EnemyBehavior : MonoBehaviour
         EnemiesManager.BombingOverEventHandler -= StandUp;
         EnemiesManager.BombingOverEventHandler -= _enemyStateMachine.SetStateSearchRest;
         InCoverEventHandler -= LayDown;
+        IsHitEventHandler -= Die;
     }        
 
 
@@ -65,6 +83,9 @@ public class EnemyBehavior : MonoBehaviour
                 break;
             case EnemyState.InShelter:
                 
+                break;
+            case EnemyState.Die:
+
                 break;
         }      
     }
@@ -147,6 +168,48 @@ public class EnemyBehavior : MonoBehaviour
         if (_isLayDown)
         {
             StandUpTask();
+        }
+    }
+
+    public void SitDown()
+    {
+        if (!_isSitDown)
+        {
+            SitDownTask();
+        }
+    }
+
+    private async Task SitDownTask()
+    {
+        if (_agent != null)
+        {
+            _isSitDown = true;
+
+            _agent.isStopped = true;
+            _agent.updateUpAxis = false;
+            _agent.updatePosition = false;
+
+            _startPosition = _childrenCapsule.transform.position;
+            Vector3 layPosition = _startPosition - new Vector3(0, 0.5f, 0);
+
+
+            _startRotation = _childrenCapsule.transform.eulerAngles;
+            Vector3 rotatelDirection = new Vector3(Mathf.Sin(_startRotation.y * Mathf.Deg2Rad), 0, Mathf.Cos(_startRotation.y * Mathf.Deg2Rad));
+            Vector3 layRotation = rotatelDirection * 45;
+
+
+            float timer = 0;
+
+            while (timer < _layTime)
+            {
+                timer += Time.deltaTime;
+                float normalizedTimer = timer / _layTime;
+
+                _childrenCapsule.transform.position = Vector3.Lerp(_startPosition, layPosition, normalizedTimer);
+                _childrenCapsule.transform.eulerAngles = Vector3.Lerp(_startRotation, layRotation, normalizedTimer);
+
+                await Task.Yield();
+            }
         }
     }
 

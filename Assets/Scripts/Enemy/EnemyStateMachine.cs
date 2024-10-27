@@ -30,6 +30,7 @@ public class EnemyStateMachine
             case EnemyState.Injury:
                 break;
             case EnemyState.Die:
+                _enemyBehavior.LayDown();
                 break;
         }
     }
@@ -49,5 +50,10 @@ public class EnemyStateMachine
     public void SetStateSearchRest()
     {
         SetState(EnemyState.Rest);
+    }
+
+    public void SetStateDie()
+    {
+        SetState(EnemyState.Die);
     }
 }
