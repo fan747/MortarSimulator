@@ -9,56 +9,77 @@ using Random = UnityEngine.Random;
 
 public class EnemyBehavior : MonoBehaviour
 {
-    [SerializeField] private Vector3 _centrePatrolPoint;
     [SerializeField] private float _range;
     [SerializeField] private float _layCenterYOffset;
     [SerializeField] private float _layTime;
     [SerializeField] private GameObject _childrenCapsule;
+    [SerializeField] private float _timeLiveAfterInjury;
 
+    private Vector3 _centrePatrolPoint;
     private NavMeshAgent _agent;
     private EnemyStateMachine _enemyStateMachine;
     private Vector3 _nearestCoverPoint;
     private bool _isLayDown = false;
     private Vector3 _startPosition;
     public Action InCoverEventHandler;
-    public Action IsHitEventHandler;
+    public Action HitEventHandler;
+    public Action InjurtEventHundler;
     private Vector3 _startRotation;
     private bool _isSitDown = false;
+    private bool _isDie = false;
+    private Vector3 _bombPosition;
 
     private void Start()
     {
         _enemyStateMachine = new EnemyStateMachine(this);
         _agent = gameObject.GetComponent<NavMeshAgent>();
 
+        _centrePatrolPoint = transform.position;
+
         EnemiesManager.FindCoverEventHandler += _enemyStateMachine.SetStateSearchShelter;
         EnemiesManager.BombingOverEventHandler += _enemyStateMachine.SetStateSearchRest;
         EnemiesManager.BombingOverEventHandler += StandUp;
-        IsHitEventHandler += Die;
+        InjurtEventHundler += SitDown;
+        HitEventHandler += Die;
         InCoverEventHandler += LayDown;
     }
-
-    public void Die()
-    {
-        EnemiesManager.FindCoverEventHandler -= _enemyStateMachine.SetStateSearchShelter;
-        EnemiesManager.BombingOverEventHandler -= StandUp;
-        EnemiesManager.BombingOverEventHandler -= _enemyStateMachine.SetStateSearchRest;
-
-        _enemyStateMachine.SetState(EnemyState.Die);
-    }
-
-    public void Injury()
-    {
-
-    }
-
     private void OnDestroy()
     {
         EnemiesManager.FindCoverEventHandler -= _enemyStateMachine.SetStateSearchShelter;
         EnemiesManager.BombingOverEventHandler -= StandUp;
         EnemiesManager.BombingOverEventHandler -= _enemyStateMachine.SetStateSearchRest;
         InCoverEventHandler -= LayDown;
-        IsHitEventHandler -= Die;
+        HitEventHandler -= Die;
+        InjurtEventHundler -= SitDown;
     }        
+
+    public void Die()
+    {
+        _isDie = true;
+
+        EnemiesManager.FindCoverEventHandler -= _enemyStateMachine.SetStateSearchShelter;
+        EnemiesManager.BombingOverEventHandler -= StandUp;
+        EnemiesManager.BombingOverEventHandler -= SitDown;
+        EnemiesManager.BombingOverEventHandler -= _enemyStateMachine.SetStateSearchRest;
+
+        _enemyStateMachine.SetState(EnemyState.Die);
+    }
+
+    public void Injury(Vector3 bombPosition)
+    {
+        if (!_isDie)
+        {
+            EnemiesManager.BombingOverEventHandler -= StandUp;
+            EnemiesManager.BombingOverEventHandler += SitDown;
+
+            _enemyStateMachine.SetState(EnemyState.Injury);
+
+            _bombPosition = bombPosition;
+
+            InjuryTimerTask();
+        }
+    }
+
 
 
     private void Update()
@@ -73,9 +94,7 @@ public class EnemyBehavior : MonoBehaviour
         {
             case EnemyState.Rest:
                 break;
-            case EnemyState.SearchShelter:
-                _agent.isStopped = false;
-
+            case EnemyState.SearchShelter:               
                 if (_agent.transform.position == new Vector3(_nearestCoverPoint.x, _agent.transform.position.y, _nearestCoverPoint.z) && !_agent.hasPath)
                 {
                     _enemyStateMachine.SetState(EnemyState.InShelter);
@@ -83,6 +102,9 @@ public class EnemyBehavior : MonoBehaviour
                 break;
             case EnemyState.InShelter:
                 
+                break;
+            case EnemyState.Injury:
+
                 break;
             case EnemyState.Die:
 
@@ -139,6 +161,7 @@ public class EnemyBehavior : MonoBehaviour
             _agent.updateUpAxis = false;
             _agent.updatePosition = false;
 
+
             _startPosition = _childrenCapsule.transform.position;
             Vector3 layPosition = _startPosition - new Vector3(0, 1, 0);
 
@@ -176,6 +199,7 @@ public class EnemyBehavior : MonoBehaviour
         if (!_isSitDown)
         {
             SitDownTask();
+            InjurtEventHundler -= SitDown;
         }
     }
 
@@ -189,12 +213,12 @@ public class EnemyBehavior : MonoBehaviour
             _agent.updateUpAxis = false;
             _agent.updatePosition = false;
 
-            _startPosition = _childrenCapsule.transform.position;
-            Vector3 layPosition = _startPosition - new Vector3(0, 0.5f, 0);
+            Vector3 startPosition = _childrenCapsule.transform.position;
+            Vector3 layPosition = startPosition - new Vector3(0, 0.5f, 0);
 
 
-            _startRotation = _childrenCapsule.transform.eulerAngles;
-            Vector3 rotatelDirection = new Vector3(Mathf.Sin(_startRotation.y * Mathf.Deg2Rad), 0, Mathf.Cos(_startRotation.y * Mathf.Deg2Rad));
+            Vector3 startRotation = Quaternion.LookRotation(_bombPosition).eulerAngles;
+            Vector3 rotatelDirection = new Vector3(Mathf.Sin(startRotation.y * Mathf.Deg2Rad), 0, Mathf.Cos(startRotation.y * Mathf.Deg2Rad));
             Vector3 layRotation = rotatelDirection * 45;
 
 
@@ -205,8 +229,8 @@ public class EnemyBehavior : MonoBehaviour
                 timer += Time.deltaTime;
                 float normalizedTimer = timer / _layTime;
 
-                _childrenCapsule.transform.position = Vector3.Lerp(_startPosition, layPosition, normalizedTimer);
-                _childrenCapsule.transform.eulerAngles = Vector3.Lerp(_startRotation, layRotation, normalizedTimer);
+                _childrenCapsule.transform.position = Vector3.Lerp(startPosition, layPosition, normalizedTimer);
+                _childrenCapsule.transform.eulerAngles = Vector3.Lerp(startRotation, layRotation, normalizedTimer);
 
                 await Task.Yield();
             }
@@ -232,6 +256,10 @@ public class EnemyBehavior : MonoBehaviour
                 _childrenCapsule.transform.position = Vector3.Lerp(startPosition, _startPosition, normalizedTimer);
                 _childrenCapsule.transform.eulerAngles = Vector3.Lerp(startRotation, _startRotation, normalizedTimer);
 
+                _agent.isStopped = true;
+                _agent.updateUpAxis = false;
+                _agent.updatePosition = false;
+
                 await Task.Yield();
             }
 
@@ -239,6 +267,20 @@ public class EnemyBehavior : MonoBehaviour
             _agent.updateUpAxis = true;
             _agent.updatePosition = true;
         }
+    }
+
+    private async Task InjuryTimerTask()
+    {
+        float timer = 0;
+
+        while(timer < _timeLiveAfterInjury)
+        {
+            timer += Time.deltaTime;
+            print($"{timer} timer");
+            await Task.Yield();
+        }
+
+        Die();
     }
 
     public NavMeshAgent GetNavMeshAgent() => _agent;

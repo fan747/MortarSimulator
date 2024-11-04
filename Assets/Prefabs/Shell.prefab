@@ -60,8 +60,8 @@ MonoBehaviour:
   _shellExplosionEffect: {fileID: 1000013462590818, guid: 34d712bd0be0bbb4fb0245c6b8f98393, type: 3}
   _audioSource: {fileID: 6937474079575015914, guid: b36cafabd82c1cd44af3261f9174e658, type: 3}
   _radiusOfScatteringShards: 60
-  _injuryRadius: 0
   _shardsCount: 600
+  _posYWhenDestroy: -100
 --- !u!23 &5988838951033104216
 MeshRenderer:
   m_ObjectHideFlags: 0

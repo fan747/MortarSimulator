@@ -28,6 +28,7 @@ public class EnemyStateMachine
                 _enemyBehavior.InCoverEventHandler?.Invoke();
                 break;
             case EnemyState.Injury:
+                _enemyBehavior.InjurtEventHundler?.Invoke();
                 break;
             case EnemyState.Die:
                 _enemyBehavior.LayDown();

@@ -11,6 +11,7 @@ using Random = UnityEngine.Random;
 
 public class EnemiesManager : MonoBehaviour
 {
+    private const float _enemyRadiusMultiplie = 1.5f;
     [SerializeField] private int _maxDistanceForCover;
     [SerializeField] private float _timeUnderCover;
 
@@ -97,20 +98,18 @@ public class EnemiesManager : MonoBehaviour
 
     private bool FindNoOccupiedPosition(float enemyRadius, Bounds nearestBounds, List<Vector3> occupiedPosition, ref Vector3 agentNearestCoverPosition)
     {
-        float enemyRadiusMultiplie = 1f;
-
         foreach (Vector3 pos in occupiedPosition)
         {
             Vector3[] directions = new Vector3[8] {
-                        new Vector3 (pos.x + enemyRadius * enemyRadiusMultiplie, pos.y, pos.z),
-                        new Vector3(pos.x - enemyRadius * enemyRadiusMultiplie, pos.y, pos.z),
-                        new Vector3(pos.x, pos.y, pos.z + enemyRadius * enemyRadiusMultiplie),
-                        new Vector3(pos.x, pos.y, pos.z - enemyRadius * enemyRadiusMultiplie),
+                        new Vector3 (pos.x + enemyRadius * _enemyRadiusMultiplie, pos.y, pos.z),
+                        new Vector3(pos.x - enemyRadius * _enemyRadiusMultiplie, pos.y, pos.z),
+                        new Vector3(pos.x, pos.y, pos.z + enemyRadius * _enemyRadiusMultiplie),
+                        new Vector3(pos.x, pos.y, pos.z - enemyRadius * _enemyRadiusMultiplie),
 
-                        new Vector3 (pos.x + enemyRadius * enemyRadiusMultiplie, pos.y,  pos.z + enemyRadius * enemyRadiusMultiplie),
-                        new Vector3(pos.x - enemyRadius * enemyRadiusMultiplie, pos.y,  pos.z - enemyRadius * enemyRadiusMultiplie),
-                        new Vector3(pos.x + enemyRadius * enemyRadiusMultiplie, pos.y, pos.z - enemyRadius * enemyRadiusMultiplie),
-                        new Vector3(pos.x - enemyRadius * enemyRadiusMultiplie, pos.y, pos.z + enemyRadius * enemyRadiusMultiplie),
+                        new Vector3 (pos.x + enemyRadius * _enemyRadiusMultiplie, pos.y,  pos.z + enemyRadius * _enemyRadiusMultiplie),
+                        new Vector3(pos.x - enemyRadius * _enemyRadiusMultiplie, pos.y,  pos.z - enemyRadius * _enemyRadiusMultiplie),
+                        new Vector3(pos.x + enemyRadius * _enemyRadiusMultiplie, pos.y, pos.z - enemyRadius * _enemyRadiusMultiplie),
+                        new Vector3(pos.x - enemyRadius * _enemyRadiusMultiplie, pos.y, pos.z + enemyRadius * _enemyRadiusMultiplie),
             };
 
             foreach (Vector3 dir in directions)
@@ -168,12 +167,10 @@ public class EnemiesManager : MonoBehaviour
 
     private (float minPosX, float maxPosX, float minPosZ, float maxPosZ) FindOccupiedPositionExtremums(float enemyRadius, Vector3 pos)
     {
-        float multiplie = 1f;
-
-        float minPosX = pos.x - enemyRadius * multiplie;
-        float maxPosX = pos.x + enemyRadius * multiplie;
-        float minPosZ = pos.z - enemyRadius * multiplie;
-        float maxPosZ = pos.z + enemyRadius * multiplie;
+        float minPosX = pos.x - enemyRadius * _enemyRadiusMultiplie;
+        float maxPosX = pos.x + enemyRadius * _enemyRadiusMultiplie;
+        float minPosZ = pos.z - enemyRadius * _enemyRadiusMultiplie;
+        float maxPosZ = pos.z + enemyRadius * _enemyRadiusMultiplie;
 
         return (minPosX, maxPosX, minPosZ, maxPosZ);
     }

@@ -6,11 +6,13 @@ TagManager:
   tags:
   - Cover
   - Enemy
+  - FxTemporaire
+  - EnemyBase
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - PostProcessingDroneCamera
   - Water
   - UI
   - 
