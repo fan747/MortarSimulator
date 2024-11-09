@@ -15,18 +15,18 @@ public class DroneCameraControll : MonoBehaviour
         Bounds enemyBaseBounds = _enemyBasePoint.GetComponent<Collider>().bounds;
 
         Vector3[] directions = new Vector3[8] {
-            new Vector3 (enemyBaseBounds.min.x, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.center.z),
-            new Vector3(enemyBaseBounds.max.x,  enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.center.z),
-            new Vector3(enemyBaseBounds.center.x, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.min.z),
-            new Vector3(enemyBaseBounds.center.x, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.max.z),
+            new Vector3 (enemyBaseBounds.min.x -_cameraOffsetMultiplie, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.center.z),
+            new Vector3(enemyBaseBounds.max.x + _cameraOffsetMultiplie,  enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.center.z),
+            new Vector3(enemyBaseBounds.center.x, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.min.z - _cameraOffsetMultiplie),
+            new Vector3(enemyBaseBounds.center.x, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.max.z + _cameraOffsetMultiplie),
 
-            new Vector3 (enemyBaseBounds.max.x, enemyBaseBounds.max.y + _cameraHeight,  enemyBaseBounds.center.z),
-            new Vector3(enemyBaseBounds.min.x, enemyBaseBounds.max.y + _cameraHeight,  enemyBaseBounds.min.z),
-            new Vector3(enemyBaseBounds.max.x, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.min.z),
-            new Vector3(enemyBaseBounds.min.x, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.max.z),
+            new Vector3 (enemyBaseBounds.max.x, enemyBaseBounds.max.y + _cameraHeight,  enemyBaseBounds.max.z + _cameraOffsetMultiplie),
+            new Vector3(enemyBaseBounds.min.x -_cameraOffsetMultiplie, enemyBaseBounds.max.y + _cameraHeight,  enemyBaseBounds.min.z - _cameraOffsetMultiplie),
+            new Vector3(enemyBaseBounds.max.x + _cameraOffsetMultiplie, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.min.z - _cameraOffsetMultiplie),
+            new Vector3(enemyBaseBounds.min.x - _cameraOffsetMultiplie, enemyBaseBounds.max.y + _cameraHeight, enemyBaseBounds.max.z + _cameraOffsetMultiplie),
         };
 
-        transform.position = directions[Random.Range(0,directions.Length)] * _cameraOffsetMultiplie;
+        transform.position = directions[Random.Range(0,directions.Length)];
         transform.LookAt(enemyBaseBounds.center);
     }
 }

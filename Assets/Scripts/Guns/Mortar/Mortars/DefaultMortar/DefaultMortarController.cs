@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Podnos2B14Mortar : MortarModel
+public class DefaultMortarController : MortarController
 {
 }  
 

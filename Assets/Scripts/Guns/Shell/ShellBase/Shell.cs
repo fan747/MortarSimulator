@@ -128,18 +128,21 @@ public abstract class Shell : MonoBehaviour
     {
         GameObject explosionEffect = Instantiate(shellExplosionEffect, gameObject.transform.position, Quaternion.identity);
         ParticleSystem explosionEffectParticleSystem = explosionEffect.GetComponent<ParticleSystem>();
-
-        AudioSource explosionSound = Instantiate(_audioSource, gameObject.transform.position, Quaternion.identity);
-        explosionSound.PlayOneShot(explosionSound.clip);
-
         EnemiesManager.FindCoverEventHandler?.Invoke();
 
-        while (explosionEffectParticleSystem.isPlaying || explosionSound.isPlaying)
+        if (!_isShowDistanceHit)
         {
-            await Task.Yield();
+            AudioSource explosionSound = Instantiate(_audioSource, gameObject.transform.position, Quaternion.identity);
+            explosionSound.PlayOneShot(explosionSound.clip);
+
+            while (explosionEffectParticleSystem.isPlaying || explosionSound.isPlaying)
+            {
+                await Task.Yield();
+            }
+
+            Destroy(explosionSound.gameObject);
         }
 
-        Destroy(explosionSound.gameObject);
         Destroy(explosionEffect);
         Destroy(gameObject);
     }
